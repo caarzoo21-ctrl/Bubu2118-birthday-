@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aman's Birthday Adventure 🌌</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #030208; color: #fff; overflow-x: hidden; text-align: center; user-select: none; }
+        
+        #space-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+
+        .screen { display: none; min-height: 100vh; padding: 25px 20px; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 2; animation: fadeIn 0.8s ease-in-out; }
+        .active { display: flex; }
+
+        h1, h2 { color: #f39c12; margin-bottom: 15px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.6); font-weight: 700; }
+        p { font-size: 1.05rem; line-height: 1.6; max-width: 550px; margin-bottom: 20px; color: #ececec; }
+
+        button { background: linear-gradient(45deg, #ff4b2b, #ff416c); color: white; border: none; padding: 14px 32px; font-size: 1rem; font-weight: bold; border-radius: 30px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 20px rgba(255, 65, 108, 0.5); margin: 10px 0; }
+        button:hover { transform: scale(1.05); }
+
+        .card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 22px; margin: 10px 0; max-width: 500px; width: 100%; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+
+        /* Map Grid */
+        .map-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 400px; margin: 20px 0; }
+        .planet { width: 80px; height: 80px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 2px solid #444; opacity: 0.5; }
+        .planet.unlocked { background: radial-gradient(circle, #ff416c, #8a2387); border-color: #f39c12; opacity: 1; box-shadow: 0 0 15px #ff416c; cursor: pointer; }
+
+        /* Catch Hearts Mini-Game Area */
+        #game-box { width: 300px; height: 250px; border: 2px dashed rgba(255,255,255,0.3); position: relative; overflow: hidden; border-radius: 15px; background: rgba(0,0,0,0.3); margin: 15px 0; }
+        .catch-heart { position: absolute; font-size: 2rem; cursor: pointer; animation: floatUp 3s linear infinite; }
+
+        /* Mystery Boxes Grid */
+        .boxes-grid { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 15px 0; }
+        .mystery-box { width: 60px; height: 60px; background: rgba(255,255,255,0.1); border: 2px solid #f39c12; border-radius: 12px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .mystery-box.opened { background: #ff416c; border-color: #fff; }
+
+        /* 23 Stars Grid */
+        .stars-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 320px; margin: 15px 0; }
+        .star-item { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid #ff416c; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; }
+        .star-item.unlocked { background: #f39c12; color: #000; font-weight: bold; box-shadow: 0 0 10px #f39c12; }
+
+        /* Cake & Candle */
+        .cake { font-size: 90px; margin: 20px 0; cursor: pointer; position: relative; }
+        .candle { font-size: 35px; position: absolute; top: -25px; left: 50%; transform: translateX(-50%); animation: flicker 0.4s infinite alternate; }
+
+        /* Shake Effect */
+        .shake { animation: shakeAnim 0.5s infinite; }
+        @keyframes shakeAnim { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 40% { transform: translate(1px, -1px) rotate(-1deg); } 60% { transform: translate(-2px, 1px) rotate(0deg); } 80% { transform: translate(1px, 1px) rotate(1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes flicker { from { opacity: 1; } to { opacity: 0.4; } }
+        @keyframes floatUp { 0% { bottom: -40px; } 100% { bottom: 260px; } }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <canvas id="space-canvas"></canvas>
+
+    <!-- Direct Online Audio Streaming (No File Upload Needed) -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="https://files.catbox.moe/w225t6.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- 01: START -->
+    <div id="step1" class="screen active">
+        <h1>Hey Bubu 👀</h1>
+        <div class="card">
+            <p>Today is a little different...</p>
+            <p>Because today I don't want to talk about us.</p>
+            <p>I want to talk about <strong>YOU</strong> ❤️</p>
+            <p>About the person who deserves to feel a little extra special today.</p>
+            <p style="font-size:0.85rem; color:#aaa;">So just stay till the end okay, and don't you dare skip anything 😭😂</p>
+        </div>
+        <button onclick="nextStep(2); playMusic();">🚀 ACCEPT THE MISSION</button>
+    </div>
+
+    <!-- 02: BIRTHDAY MAP -->
+    <div id="step2" class="screen">
+        <h2>🗺️ THE BIRTHDAY MAP</h2>
+        <p>Choose your path Bubu. Don't worry, I won't make this difficult... Probably 😭😂</p>
+        <div class="map-grid">
+            <div class="planet unlocked" onclick="nextStep(3)">🌙<br>START</div>
+            <div class="planet">🪐<br>MEMORIES</div>
+            <div class="planet">⭐<br>SECRETS</div>
+            <div class="planet">🎂<br>???</div>
+        </div>
+    </div>
+
+    <!-- 03: FIRST CLUE -->
+    <div id="step3" class="screen">
+        <h2>📱 THE FIRST CLUE</h2>
+        <div class="card">
+            <p style="color:#f39c12; font-style:italic;">"Someone replied to your story..."</p>
+            <p>And somehow that tiny reply started a whole new chapter. 💬</p>
+            <hr style="border-color:rgba(255,255,255,0.1); margin:15px 0;">
+            <p>But today isn't about how long anything has lasted. Today is about the person who is having a birthday...</p>
+            <p style="font-size:1.3rem; color:#ff416c;"><strong>YOU ❤️</strong></p>
+        </div>
+        <button onclick="nextStep(4)">🔓 UNLOCK NEXT CLUE</button>
+    </div>
+
+    <!-- 04: MINI GAME -->
+    <div id="step4" class="screen">
+        <h2>🎮 MINI GAME: CATCH THE HEARTS ❤️</h2>
+        <p>Catch 5 hearts to prove your clicking skills!</p>
+        <div id="game-box"></div>
+        <p id="game-status" style="font-weight:bold;">Score: 0 / 5</p>
+        <button id="game-next-btn" style="display:none;" onclick="nextStep(5)">👀 SHOW ME</button>
+    </div>
+
+    <!-- 05: SHAYARI - BEAUTY -->
+    <div id="step5" class="screen">
+        <h2>🌹 YOUR BEAUTY</h2>
+        <div class="card" style="font-style: italic; line-height: 1.8;">
+            <p>“Tumhari hasi pe toh hum bhi haar jaate hain,<br>
+            Tum saamne aao toh bas tumhe dekhte reh jaate hain.<br>
+            Pata nahi tum mein aisa kya hai Bubu,<br>
+            Ki tumse baat karke hum khud hi muskura jaate hain... 🥺❤️”</p>
+        </div>
+        <p>And yes, I genuinely love your smile. So please don't stop smiling. Samjhe Bubu? 😭❤️</p>
+        <button onclick="nextStep(6)">✨ NEXT</button>
+    </div>
+
+    <!-- 06: THINGS I LIKE ABOUT YOU -->
+    <div id="step6" class="screen">
+        <h2>🧁 THINGS I LIKE ABOUT YOU</h2>
+        <p>Open all 5 mystery boxes!</p>
+        <div class="boxes-grid">
+            <div class="mystery-box" onclick="openBox(1, 'Your smile', 'Already told you... still not enough 😭❤️')">🎁</div>
+            <div class="mystery-box" onclick="openBox(2, 'Your teasing', 'You annoy me professionally, I swear you have a degree in it 😭😂')">🎁</div>
+            <div class="mystery-box" onclick="openBox(3, 'Your cute names', 'Bubu, Cupcake, My Love... You have made these names feel extra special.')">🎁</div>
+            <div class="mystery-box" onclick="openBox(4, 'Your personality', 'You are funny, caring, cute, annoying... and sometimes all four at once 😭')">🎁</div>
+            <div class="mystery-box" onclick="openBox(5, 'Your secret love language', 'I know you love me. You just don\'t advertise it! Tumhara pyaar bhi guess the feeling game hai, but I still know ❤️')">🎁</div>
+        </div>
+        <div class="card" id="box-detail" style="min-height: 80px; display:none;">
+            <h3 id="box-title" style="color:#f39c12;"></h3>
+            <p id="box-text"></p>
+        </div>
+        <button id="boxes-next-btn" style="display:none;" onclick="nextStep(7)">CONTINUE 🌌</button>
+    </div>
+
+    <!-- 07: SHAYARI - IMPORTANCE -->
+    <div id="step7" class="screen">
+        <h2>🌙 YOUR IMPORTANCE</h2>
+        <div class="card" style="font-style: italic; line-height: 1.8;">
+            <p>“Tum meri zindagi mein bas ek naam nahi ho,<br>
+            Tum woh ho jiske bina kuch baatein adhoori lagti hain.<br>
+            Tumse baat ho toh din thoda aur accha lagta hai,<br>
+            Aur tum na ho toh pata nahi kyun kuch kami si lagti hai... 🥺❤️”</p>
+        </div>
+        <p>Maybe you don't realise it, but you have become a really important part of my life. And I hope you always know that ❤️</p>
+        <button onclick="nextStep(8)">🌌 FIND OUT WHY</button>
+    </div>
+
+    <!-- 08: 23 LITTLE THINGS -->
+    <div id="step8" class="screen">
+        <h2>❤️ 23 LITTLE THINGS</h2>
+        <p>Unlock all 23 glowing stars!</p>
+        <div class="stars-grid" id="stars-container"></div>
+        <div class="card" id="star-detail" style="min-height: 70px;">
+            <p id="star-text">Tap star #1 to unlock 🌟</p>
+        </div>
+        <button id="stars-next-btn" style="display:none;" onclick="nextStep(9)">KEEP GOING 💥</button>
+    </div>
+
+    <!-- 09: BIRTHDAY CHAOS -->
+    <div id="step9" class="screen">
+        <h2 style="color:#ff416c;">⚠️ WARNING: BIRTHDAY CHAOS</h2>
+        <div class="card">
+            <p>Too much sweetness detected! Emergency birthday bombs required 👀💥</p>
+        </div>
+        <div id="chaos-box" style="font-size: 3rem; margin: 15px 0;"></div>
+        <button onclick="dropBombs()">💥 DROP THE BOMBS</button>
+        <button id="chaos-next-btn" style="display:none;" onclick="nextStep(10)">CONTINUE 🌠</button>
+    </div>
+
+    <!-- 10: WISH PORTAL -->
+    <div id="step10" class="screen">
+        <h2>🌠 THE WISH PORTAL</h2>
+        <p>Close your eyes for a few seconds. Think about something you really want. Don't tell me, just make the wish 🌠</p>
+        <div style="font-size: 80px; margin: 10px 0;">🌕</div>
+        <button onclick="makeWishPortal()">✨ MAKE MY WISH</button>
+        <div class="card" id="portal-result" style="display:none; margin-top:15px;">
+            <p style="color:#f39c12;">Wish sent 🌠❤️ I hope it comes true.</p>
+            <p>If I could make one wish for you, I would wish for your happiness, peace, success, and that beautiful smile of yours.</p>
+            <p style="color:#ff758c;">And maybe one selfish little wish too... Bas aise hi mere saath rehna ❤️</p>
+            <button onclick="nextStep(11)">GO TO CAKE CHALLENGE 🎂</button>
+        </div>
+    </div>
+
+    <!-- 11: CAKE CHALLENGE -->
+    <div id="step11" class="screen">
+        <h2>🎂 CAKE CHALLENGE</h2>
+        <div class="card">
+            <p id="cake-task" style="color:#f39c12; font-weight:bold;">Challenge 1: Tap to find the hidden candle!</p>
+        </div>
+        <div class="cake" onclick="handleCakeChallenge()">
+            <span class="candle" id="cake-candle" style="display:none;">🕯️</span>
+            🎂
+        </div>
+        <button id="cake-next-btn" style="display:none;" onclick="nextStep(12)">SOMETHING IS COMING ⏳</button>
+    </div>
+
+    <!-- 12: COUNTDOWN -->
+    <div id="step12" class="screen">
+        <p style="font-size: 1.5rem;">Bubu… I think you're ready now.</p>
+        <h1 id="count-number" style="font-size: 6rem; color:#ff416c; margin-top:20px;">10</h1>
+    </div>
+
+    <!-- 13: THE BIG REVEAL -->
+    <div id="step13" class="screen">
+        <h1 style="font-size: 2.5rem; color:#ff416c;">🎂 HAPPY BIRTHDAY AMAN! ❤️</h1>
+        <h2 style="color:#f39c12;">21 SEPTEMBER</h2>
+        <div class="card">
+            <p>Today is your day Bubu 🥺 So smile extra today, because yes, You deserve all of it ❤️</p>
+        </div>
+        <button onclick="nextStep(14)">💌 FINAL MESSAGE</button>
+    </div>
+
+    <!-- 14: FINAL LETTER -->
+    <div id="step14" class="screen">
+        <h2>Happy Birthday My Love 🥺💌</h2>
+        <div class="card" style="text-align: left; max-height: 350px; overflow-y: auto;">
+            <p>I wanted to make something for you that wasn't just a normal birthday wish. I wanted you to actually experience it.</p>
+            <p>Because you deserve more than just two words saying Happy Birthday. You deserve to be reminded that you are special.</p>
+            <p>I love your smile, your stupid little ways, how you annoy me, your cute names, and our random conversations.</p>
+            <p>And yes, I know you love me too 😭 You just have absolutely no idea how to show it sometimes 😂 But that's okay, I have somehow learned your weird little language 😭❤️</p>
+            <p>Keep smiling, keep growing, and never forget that you are important. Not just today, EVERY DAY.</p>
+            <br>
+            <p style="text-align: right; color:#ff758c;">— From your Kalua 🌌❤️</p>
+        </div>
+        <button onclick="nextStep(15)">FINAL SECRET 🌙</button>
+    </div>
+
+    <!-- 15: FINAL SCREEN -->
+    <div id="step15" class="screen">
+        <h2>One last secret Bubu… 🌙</h2>
+        <div class="card">
+            <h1 style="font-size: 1.8rem; color:#ff416c;">You are loved more than you know ❤️</h1>
+            <p style="margin-top:15px; font-weight:bold;">HAPPY BIRTHDAY MY LOVE ❤️🎂<br>21 • SEPTEMBER</p>
+        </div>
+        <button onclick="location.reload()">🔄 START THE ADVENTURE AGAIN</button>
+    </div>
+
+    <script>
+        // Starfield Canvas Effect
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        for(let i = 0; i < 180; i++) {
+            stars.push({ x: Math.random() * canvas.width - canvas.width/2, y: Math.random() * canvas.height - canvas.height/2, z: Math.random() * canvas.width });
+        }
+
+        function drawStars() {
+            ctx.fillStyle = "rgba(3, 2, 8, 0.3)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            let cx = canvas.width / 2, cy = canvas.height / 2;
+            for(let i = 0; i < stars.length; i++) {
+                let star = stars[i];
+                star.z -= 1.2;
+                if(star.z <= 0) star.z = canvas.width;
+                let k = 128 / star.z;
+                let px = star.x * k + cx, py = star.y * k + cy;
+                if(px >= 0 && px <= canvas.width && py >= 0 && py <= canvas.height) {
+                    let size = (1 - star.z / canvas.width) * 2.2;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${1 - star.z / canvas.width})`;
+                    ctx.beginPath(); ctx.arc(px, py, size, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        function playMusic() {
+            var audio = document.getElementById("bg-music");
+            audio.play().catch(e => console.log("Audio play blocked by browser"));
+        }
+
+        function nextStep(stepNum) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + stepNum).classList.add('active');
+            if(stepNum === 4) initGame();
+            if(stepNum === 8) initStars();
+            if(stepNum === 12) startFinalCountdown();
+        }
+
+        /* 04: Mini Game Logic */
+        let caughtHearts = 0;
+        function initGame() {
+            const box = document.getElementById('game-box');
+            box.innerHTML = ''; caughtHearts = 0;
+            for(let i=0; i<5; i++) {
+                let h = document.createElement('div');
+                h.className = 'catch-heart';
+                h.innerText = '❤️';
+                h.style.left = Math.random() * 240 + 'px';
+                h.style.animationDelay = (i * 0.6) + 's';
+                h.onclick = function() {
+                    this.remove();
+                    caughtHearts++;
+                    document.getElementById('game-status').innerText = `Score: ${caughtHearts} / 5`;
+                    if(caughtHearts === 5) {
+                        document.getElementById('game-status').innerText = "Okayyy passed! 😭";
+                        document.getElementById('game-next-btn').style.display = 'inline-block';
+                    }
+                };
+                box.appendChild(h);
+            }
+        }
+
+        /* 06: Mystery Boxes */
+        let openedCount = 0;
+        function openBox(num, title, text) {
+            document.getElementById('box-detail').style.display = 'block';
+            document.getElementById('box-title').innerText = title;
+            document.getElementById('box-text').innerText = text;
+            openedCount++;
+            if(openedCount >= 5) document.getElementById('boxes-next-btn').style.display = 'inline-block';
+        }
+
+        /* 08: 23 Stars Logic */
+        const littleThings = [
+            "01. You are genuinely special", "02. Your smile can fix my mood faster than you know 😭",
+            "03. You are ridiculously cute sometimes", "04. You are also ridiculously annoying sometimes 😂",
+            "05. I notice your little efforts", "06. I like listening to your random nonsense",
+            "07. Your cute names have way too much power over me", "08. You make normal conversations feel special",
+            "09. You somehow became someone I look forward to talking to", "10. You have a really good heart",
+            "11. I like the way you are just yourself", "12. You make me laugh",
+            "13. You make me angry too 😭", "14. But somehow I still come back to you 😂",
+            "15. I know you love me even if showing it isn't your strongest skill 😭", "16. Your happiness matters to me",
+            "17. I want you to take care of yourself", "18. I want you to keep smiling",
+            "19. I want you to achieve everything you dream about", "20. You deserve good things",
+            "21. You deserve to feel proud of yourself", "22. You are more important to me than you realise",
+            "23. And Bubu, never forget that your Kalua genuinely wants to see you happy ❤️"
+        ];
+        let unlockedStars = 0;
+        function initStars() {
+            const container = document.getElementById('stars-container');
+            if(container.children.length > 0) return;
+            littleThings.forEach((item, index) => {
+                let s = document.createElement('div');
+                s.className = 'star-item';
+                s.innerText = index + 1;
+                s.onclick = function() {
+                    this.classList.add('unlocked');
+                    document.getElementById('star-text').innerText = item;
+                    unlockedStars++;
+                    if(unlockedStars === 23) {
+                        document.getElementById('stars-next-btn').style.display = 'inline-block';
+                    }
+                };
+                container.appendChild(s);
+            });
+        }
+
+        /* 09: Chaos Bombs */
+        function dropBombs() {
+            document.body.classList.add('shake');
+            let c = 3;
+            let timer = setInterval(() => {
+                document.getElementById('chaos-box').innerText = c;
+                c--;
+                if(c < 0) {
+                    clearInterval(timer);
+                    document.body.classList.remove('shake');
+                    document.getElementById('chaos-box').innerText = "💥🎉💥🎉";
+                    confetti({ particleCount: 180, spread: 90, origin: { y: 0.6 } });
+                    document.getElementById('chaos-next-btn').style.display = 'inline-block';
+                }
+            }, 700);
+        }
+
+        /* 10: Wish Portal */
+        function makeWishPortal() {
+            confetti({ particleCount: 100, spread: 80 });
+            document.getElementById('portal-result').style.display = 'block';
+        }
+
+        /* 11: Cake Challenge */
+        let cakeStage = 1;
+        function handleCakeChallenge() {
+            if(cakeStage === 1) {
+                document.getElementById('cake-candle').style.display = 'block';
+                document.getElementById('cake-task').innerText = "Challenge 2: Tap candles to blow them out! 🕯️";
+                cakeStage = 2;
+            } else if(cakeStage === 2) {
+                document.getElementById('cake-candle').style.display = 'none';
+                document.getElementById('cake-task').innerText = "Challenge 3: Tap cake to cut it! 🎂";
+                cakeStage = 3;
+            } else if(cakeStage === 3) {
+                document.getElementById('cake-task').innerText = "CAKE UNLOCKED! 😭🎂";
+                confetti({ particleCount: 120, spread: 70 });
+                document.getElementById('cake-next-btn').style.display = 'inline-block';
+            }
+        }
+
+        /* 12: Countdown */
+        function startFinalCountdown() {
+            let count = 10;
+            let elem = document.getElementById('count-number');
+            let timer = setInterval(() => {
+                count--;
+                elem.innerText = count;
+                if(count === 0) {
+                    clearInterval(timer);
+                    confetti({ particleCount: 250, spread: 100, origin: { y: 0.5 } });
+                    nextStep(13);
+                }
+            }, 900);
+        }
+    </script>
+</body>
+</html>
